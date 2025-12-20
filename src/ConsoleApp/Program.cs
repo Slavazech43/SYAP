@@ -41,49 +41,57 @@ static void PrintStudent(Student student)
     Console.WriteLine("Id: " + student.Id);
     Console.WriteLine("Name: " + student.Name);
     Console.WriteLine("Email: " + student.Email);
-
     Console.WriteLine("Enrollments: " + student.Enrollments.Count);
+
     for (int i = 0; i < student.Enrollments.Count; i++)
     {
         var e = student.Enrollments[i];
-        Console.WriteLine($"  [{i + 1}] CourseId: {e.CourseId}, EnrolledAt(UTC): {e.EnrolledAtUtc}");
+        Console.WriteLine($"  [{i + 1}] EnrollmentId: {e.Id}, CourseRef: {e.Course}, EnrolledAt(UTC): {e.EnrolledAtUtc}");
     }
 
     Console.WriteLine();
 }
 
-static void PrintStudentDetails(Student student, CourseId courseId)
+static void PrintStudentEnrollmentDetails(Student student, EnrollmentId enrollmentId)
 {
-    Console.WriteLine("=== STUDENT DETAILS ===");
-    Console.WriteLine("Course: " + courseId);
-
-    var progress = student.GetProgressForCourse(courseId);
-    Console.WriteLine("  Progress:");
-    if (progress.Count == 0)
+    var e = student.Enrollments.FirstOrDefault(x => x.Id == enrollmentId);
+    if (e == null)
     {
-        Console.WriteLine("    (no progress yet)");
+        Console.WriteLine("=== STUDENT DETAILS ===");
+        Console.WriteLine("Enrollment not found.");
+        Console.WriteLine();
+        return;
+    }
+
+    Console.WriteLine("=== STUDENT DETAILS ===");
+    Console.WriteLine("EnrollmentId: " + e.Id);
+    Console.WriteLine("CourseRef: " + e.Course);
+
+    Console.WriteLine("  Progress:");
+    if (e.Progress.Count == 0)
+    {
+        Console.WriteLine("    (no progress)");
     }
     else
     {
-        for (int i = 0; i < progress.Count; i++)
+        for (int i = 0; i < e.Progress.Count; i++)
         {
-            var p = progress[i];
-            Console.WriteLine($"    LessonId: {p.LessonId}, Progress: {p.Percent}, Completed: {p.IsCompleted}");
+            var p = e.Progress[i];
+            Console.WriteLine($"    LessonRef: {p.Lesson}, Progress: {p.Percent}%, Completed: {p.IsCompleted}");
         }
     }
 
-    var attempts = student.GetAttemptsForCourse(courseId);
     Console.WriteLine("  Test attempts:");
-    if (attempts.Count == 0)
+    if (e.Attempts.Count == 0)
     {
         Console.WriteLine("    (no attempts)");
     }
     else
     {
-        for (int i = 0; i < attempts.Count; i++)
+        for (int i = 0; i < e.Attempts.Count; i++)
         {
-            var a = attempts[i];
-            Console.WriteLine($"    AttemptId: {a.AttemptId}, TestId: {a.TestId}, Status: {a.Status}, Score: {a.Score}");
+            var a = e.Attempts[i];
+            Console.WriteLine($"    AttemptId: {a.Id}, TestRef: {a.Test}, Status: {a.Status}, Score: {(a.Score is null ? "-" : a.Score.ToString())}");
         }
     }
 
@@ -92,7 +100,7 @@ static void PrintStudentDetails(Student student, CourseId courseId)
 
 try
 {
-    // 1) Курс
+    // 1) Course
     var course = Course.Create(
         CourseId.Create(Guid.NewGuid()),
         CourseTitle.Create("C# ООП: Доменные модели"),
@@ -100,7 +108,6 @@ try
         Money.Create(1990m, "RUB")
     );
 
-    // 2) Структура курса
     var module1 = Module.Create(
         ModuleId.Create(Guid.NewGuid()),
         ModuleTitle.Create("Модуль 1 — Основы")
@@ -118,29 +125,40 @@ try
         AnswerText.Create("Объект, сравниваемый по значению")
     ));
 
+    // Важно: сначала прикрепляем тест к уроку
     lesson1.AttachTest(test1);
+
+    // затем собираем модуль и курс
     module1.AddLesson(lesson1);
     course.AddModule(module1);
 
-    // 3) Студент + зачисление + прогресс + попытка
+    PrintCourse(course);
+
+    // 2) Student (редизайн: Students не зависит от Courses Id типов)
     var student = Student.Create(
         StudentId.Create(Guid.NewGuid()),
         PersonName.Create("Slava"),
         Email.Create("slava@example.com")
     );
 
-    student.Enroll(course.Id);
-    student.UpdateLessonProgress(course.Id, lesson1.Id, ProgressPercent.Create(50));
-    var attemptId = student.StartTestAttempt(course.Id, test1.Id);
-    student.FinishTestAttempt(course.Id, attemptId, ScorePercent.Create(100));
+    // Берём Guid из Courses Id, но заворачиваем в Students ref-VO
+    var courseRef = CourseRef.Create(course.Id.Value);
+    var lessonRef = LessonRef.Create(lesson1.Id.Value);
+    var testRef = TestRef.Create(test1.Id.Value);
 
-    // 4) Вывод
-    PrintCourse(course);
+    var enrollmentId = student.Enroll(courseRef);
+
+    student.UpdateLessonProgress(enrollmentId, lessonRef, ProgressPercent.Create(50));
+    var attemptId = student.StartTestAttempt(enrollmentId, testRef);
+    student.FinishTestAttempt(enrollmentId, attemptId, ScorePercent.Create(100));
+
+    Console.WriteLine("OK: student enrolled and finished attempt.");
+    Console.WriteLine();
 
     PrintStudent(student);
-    PrintStudentDetails(student, course.Id);
+    PrintStudentEnrollmentDetails(student, enrollmentId);
 
-    // 5) Публикация курса
+    // 3) Publish course
     course.Publish();
     Console.WriteLine("OK: курс опубликован.");
     PrintCourse(course);
