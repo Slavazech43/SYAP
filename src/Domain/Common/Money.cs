@@ -1,7 +1,16 @@
 namespace Domain.Common;
 
-public readonly record struct Money(decimal Amount, string Currency)
+public sealed record Money
 {
+    public decimal Amount { get; }
+    public string Currency { get; }
+
+    private Money(decimal amount, string currency)
+    {
+        Amount = amount;
+        Currency = currency;
+    }
+
     public static Money Create(decimal amount, string currency)
     {
         if (amount <= 0m)
