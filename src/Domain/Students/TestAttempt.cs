@@ -13,7 +13,7 @@ public sealed class TestAttempt
     {
         Id = id;
         Test = test;
-        Status = AttemptStatus.Started;
+        Status = new AttemptStatus.Started();
         Score = null;
     }
 
@@ -22,10 +22,10 @@ public sealed class TestAttempt
 
     public void Finish(ScorePercent score)
     {
-        if (Status == AttemptStatus.Finished)
+        if (Status.IsFinal)
             throw new InvalidOperationException("Попытка уже завершена.");
 
         Score = score;
-        Status = AttemptStatus.Finished;
+        Status = new AttemptStatus.Finished();
     }
 }

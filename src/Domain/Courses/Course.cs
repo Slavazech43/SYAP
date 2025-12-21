@@ -18,14 +18,13 @@ public sealed class Course
         CourseId id,
         CourseTitle title,
         CourseDescription description,
-        Money price,
-        CourseStatus status)
+        Money price)
     {
         Id = id;
         Title = title;
         Description = description;
         Price = price;
-        Status = status;
+        Status = new CourseStatus.Draft();
     }
 
     public static Course Create(
@@ -34,50 +33,61 @@ public sealed class Course
         CourseDescription description,
         Money price)
     {
-        // Валидация уже в VO.Create + Money.Create.
-        return new Course(id, title, description, price, CourseStatus.Draft);
+        return new Course(id, title, description, price);
     }
 
-    public void Rename(CourseTitle title) => Title = title;
+    public void Rename(CourseTitle title)
+    {
+        EnsureNotArchived();
+        Title = title;
+    }
 
-    public void ChangeDescription(CourseDescription description) => Description = description;
+    public void ChangeDescription(CourseDescription description)
+    {
+        EnsureNotArchived();
+        Description = description;
+    }
 
     public void ChangePrice(Money price)
     {
-        if (Status == CourseStatus.Published)
-            throw new InvalidOperationException("Нельзя менять цену опубликованного курса.");
+        EnsureNotArchived();
         Price = price;
     }
 
     public void AddModule(Module module)
     {
-        if (module == null) throw new ArgumentNullException(nameof(module));
+        EnsureNotArchived();
 
         if (_modules.Any(m => m.Id == module.Id))
-            throw new InvalidOperationException("Модуль с таким Id уже существует в курсе.");
+            throw new InvalidOperationException("Модуль с таким Id уже добавлен.");
 
         _modules.Add(module);
     }
 
-    public void RemoveModule(ModuleId moduleId)
-    {
-        var idx = _modules.FindIndex(m => m.Id == moduleId);
-        if (idx < 0) throw new InvalidOperationException("Модуль не найден.");
-        _modules.RemoveAt(idx);
-    }
-
     public void Publish()
     {
-        if (Status == CourseStatus.Published) return;
+        EnsureNotArchived();
+
+        if (!Status.CanPublish)
+            throw new InvalidOperationException("Курс нельзя опубликовать из текущего статуса.");
 
         if (_modules.Count == 0)
-            throw new InvalidOperationException("Нельзя публиковать курс без модулей.");
+            throw new InvalidOperationException("Нельзя опубликовать курс без модулей.");
 
-        if (_modules.Any(m => m.Lessons.Count == 0))
-            throw new InvalidOperationException("Нельзя публиковать курс: есть модуль без уроков.");
-
-        Status = CourseStatus.Published;
+        Status = new CourseStatus.Published();
     }
 
-    public void Archive() => Status = CourseStatus.Archived;
+    public void Archive()
+    {
+        if (Status is CourseStatus.Archived)
+            throw new InvalidOperationException("Курс уже архивирован.");
+
+        Status = new CourseStatus.Archived();
+    }
+
+    private void EnsureNotArchived()
+    {
+        if (Status is CourseStatus.Archived)
+            throw new InvalidOperationException("Архивированный курс нельзя изменять.");
+    }
 }

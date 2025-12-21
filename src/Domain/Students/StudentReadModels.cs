@@ -1,3 +1,4 @@
+using Domain.Students;
 using Domain.Courses.ValueObjects;
 using Domain.Students.ValueObjects;
 
