@@ -1,25 +1,25 @@
 namespace Domain.Students.ValueObjects;
 
-public readonly record struct AttemptId
+public readonly record struct LessonRef
 {
     public Guid Value { get; }
 
-    public AttemptId()
+    public LessonRef()
     {
         Value = Guid.NewGuid();
     }
 
-    private AttemptId(Guid value)
+    private LessonRef(Guid value)
     {
         Value = value;
     }
 
-    public static AttemptId Create(Guid value)
+    public static LessonRef Create(Guid value)
     {
         if (value == Guid.Empty)
-            throw new ArgumentException("AttemptId пустой.");
+            throw new ArgumentException("LessonRef пустой.");
 
-        return new AttemptId(value);
+        return new LessonRef(value);
     }
 
     public override string ToString() => Value.ToString();

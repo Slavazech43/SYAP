@@ -1,7 +1,19 @@
 namespace Domain.Common;
 
-public readonly record struct UtcDateTime(DateTime Value)
+public readonly record struct UtcDateTime
 {
+    public DateTime Value { get; }
+
+    public UtcDateTime()
+    {
+        Value = DateTime.UtcNow;
+    }
+
+    private UtcDateTime(DateTime value)
+    {
+        Value = value;
+    }
+
     public static UtcDateTime Create(DateTime value)
     {
         if (value == default)

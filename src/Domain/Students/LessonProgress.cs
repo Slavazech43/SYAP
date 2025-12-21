@@ -1,28 +1,26 @@
-using Domain.Courses.ValueObjects;
 using Domain.Students.ValueObjects;
 
 namespace Domain.Students;
 
 public sealed class LessonProgress
 {
-    public LessonId LessonId { get; }
+    public LessonRef Lesson { get; }
     public ProgressPercent Percent { get; private set; }
     public bool IsCompleted { get; private set; }
 
-    private LessonProgress(LessonId lessonId, ProgressPercent percent, bool isCompleted)
+    private LessonProgress(LessonRef lesson)
     {
-        LessonId = lessonId;
-        Percent = percent;
-        IsCompleted = isCompleted;
+        Lesson = lesson;
+        Percent = ProgressPercent.Create(0);
+        IsCompleted = false;
     }
 
-    public static LessonProgress Create(LessonId lessonId)
-        => new LessonProgress(lessonId, ProgressPercent.Create(0), false);
+    public static LessonProgress Create(LessonRef lesson)
+        => new LessonProgress(lesson);
 
     public void Update(ProgressPercent percent)
     {
         Percent = percent;
-        if (Percent.Value == 100)
-            IsCompleted = true;
+        IsCompleted = percent.Value >= 100;
     }
 }
