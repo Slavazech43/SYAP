@@ -21,13 +21,13 @@ public sealed class StudentConfiguration : IEntityTypeConfiguration<Student>
 
         builder.Property(x => x.Name)
             .HasColumnName("name")
-            .HasMaxLength(200)
+            .HasMaxLength(PersonName.MaxLength)
             .HasConversion(v => v.Value, v => PersonName.Create(v))
             .IsRequired();
 
         builder.Property(x => x.Email)
             .HasColumnName("email")
-            .HasMaxLength(120)
+            .HasMaxLength(Email.MaxLength)
             .HasConversion(v => v.Value, v => Email.Create(v))
             .IsRequired();
 

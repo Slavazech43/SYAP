@@ -18,12 +18,12 @@ public sealed class QuestionConfiguration : IEntityTypeConfiguration<Question>
             .ValueGeneratedNever();
 
         builder.Property(x => x.Text)
-            .HasMaxLength(500)
+            .HasMaxLength(QuestionText.MaxLength)
             .HasConversion(v => v.Value, v => QuestionText.Create(v))
             .IsRequired();
 
         builder.Property(x => x.CorrectAnswer)
-            .HasMaxLength(500)
+            .HasMaxLength(AnswerText.MaxLength)
             .HasConversion(v => v.Value, v => AnswerText.Create(v))
             .IsRequired();
     }

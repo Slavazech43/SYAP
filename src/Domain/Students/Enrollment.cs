@@ -26,17 +26,18 @@ public sealed class Enrollment
         => new Enrollment(id, course, enrolledAtUtc);
 
     public void UpdateLessonProgress(LessonRef lesson, ProgressPercent percent)
+{
+    var p = _progress.FirstOrDefault(x => x.Lesson == lesson);
+
+    if (p == null)
     {
-        var p = _progress.FirstOrDefault(x => x.Lesson == lesson);
-
-        if (p == null)
-        {
-            p = LessonProgress.Create(lesson);
-            _progress.Add(p);
-        }
-
-        p.Update(percent);
+        p = LessonProgress.Create(Id, lesson);
+        _progress.Add(p);
     }
+
+    p.Update(percent);
+}
+
 
     public AttemptId StartAttempt(TestRef test)
     {

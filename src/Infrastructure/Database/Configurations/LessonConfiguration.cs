@@ -18,7 +18,7 @@ public sealed class LessonConfiguration : IEntityTypeConfiguration<Lesson>
             .ValueGeneratedNever();
 
         builder.Property(x => x.Title)
-            .HasMaxLength(200)
+            .HasMaxLength(LessonTitle.MaxLength)
             .HasConversion(v => v.Value, v => LessonTitle.Create(v))
             .IsRequired();
 

@@ -1,6 +1,6 @@
+using Domain.Common;
 using Domain.Courses;
 using Domain.Courses.ValueObjects;
-using Domain.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,29 +16,19 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
 
         builder.Property(x => x.Id)
             .HasColumnName("id")
-            .HasConversion(
-                v => v.Value,
-                v => CourseId.Create(v)
-            )
+            .HasConversion(v => v.Value, v => CourseId.Create(v))
             .ValueGeneratedNever();
 
-       
         builder.Property(x => x.Title)
             .HasColumnName("title")
-            .HasMaxLength(200)
-            .HasConversion(
-                v => v.Value,
-                v => CourseTitle.Create(v)
-            )
+            .HasMaxLength(CourseTitle.MaxLength)
+            .HasConversion(v => v.Value, v => CourseTitle.Create(v))
             .IsRequired();
 
         builder.Property(x => x.Description)
             .HasColumnName("description")
-            .HasMaxLength(2000)
-            .HasConversion(
-                v => v.Value,
-                v => CourseDescription.Create(v)
-            )
+            .HasMaxLength(CourseDescription.MaxLength)
+            .HasConversion(v => v.Value, v => CourseDescription.Create(v))
             .IsRequired();
 
         builder.OwnsOne(x => x.Price, money =>
@@ -54,7 +44,6 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
                 .IsRequired();
         });
 
-        
         builder.Property(x => x.Status)
             .HasColumnName("status_key")
             .HasConversion(
@@ -63,7 +52,7 @@ public sealed class CourseConfiguration : IEntityTypeConfiguration<Course>
             )
             .IsRequired();
 
-       builder.HasMany<Module>("_modules")
+        builder.HasMany<Module>("_modules")
             .WithOne()
             .HasForeignKey("course_id")
             .OnDelete(DeleteBehavior.Cascade);

@@ -11,7 +11,12 @@ public sealed class LessonProgressConfiguration : IEntityTypeConfiguration<Lesso
     {
         builder.ToTable("lesson_progress");
 
-        builder.HasKey("enrollment_id", "lesson_id");
+        builder.HasKey(x => new { x.EnrollmentId, x.Lesson });
+
+        builder.Property(x => x.EnrollmentId)
+            .HasColumnName("enrollment_id")
+            .HasConversion(v => v.Value, v => EnrollmentId.Create(v))
+            .IsRequired();
 
         builder.Property(x => x.Lesson)
             .HasColumnName("lesson_id")

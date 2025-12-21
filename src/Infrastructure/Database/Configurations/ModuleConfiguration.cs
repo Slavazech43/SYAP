@@ -18,7 +18,7 @@ public sealed class ModuleConfiguration : IEntityTypeConfiguration<Module>
             .ValueGeneratedNever();
 
         builder.Property(x => x.Title)
-            .HasMaxLength(200)
+            .HasMaxLength(ModuleTitle.MaxLength)
             .HasConversion(v => v.Value, v => ModuleTitle.Create(v))
             .IsRequired();
 
