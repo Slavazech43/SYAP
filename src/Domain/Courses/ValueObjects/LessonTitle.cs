@@ -2,17 +2,19 @@ namespace Domain.Courses.ValueObjects;
 
 public sealed record LessonTitle
 {
+    public const int MaxLength = 200;
     public string Value { get; }
 
     private LessonTitle(string value) => Value = value;
 
     public static LessonTitle Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value)) throw new ArgumentException("Название урока пустое.");
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException("LessonTitle пустой.");
 
         var v = value.Trim();
-        if (v.Length < 2) throw new ArgumentException("Название урока слишком короткое.");
-        if (v.Length > 120) throw new ArgumentException("Название урока слишком длинное.");
+        if (v.Length > MaxLength)
+            throw new ArgumentException($"LessonTitle должен быть <= {MaxLength} символов.");
 
         return new LessonTitle(v);
     }

@@ -2,29 +2,30 @@ using Domain.Common;
 
 namespace Domain.Courses;
 
-public abstract record CourseStatus : Enumeration<CourseStatus>
+public sealed record CourseStatus : Enumeration<CourseStatus>
 {
-    protected CourseStatus(int key, string name) : base(key, name) { }
+    private readonly bool _canPublish;
+    private readonly bool _isPublished;
+    private readonly bool _isArchived;
 
-    public virtual bool CanPublish => false;
-    public virtual bool IsPublished => false;
-    public virtual bool IsArchived => false;
-
-    public sealed record Draft : CourseStatus
+    private CourseStatus(int key, string name, bool canPublish, bool isPublished, bool isArchived)
+        : base(key, name)
     {
-        public Draft() : base(1, "Draft") { }
-        public override bool CanPublish => true;
+        _canPublish = canPublish;
+        _isPublished = isPublished;
+        _isArchived = isArchived;
     }
 
-    public sealed record Published : CourseStatus
-    {
-        public Published() : base(2, "Published") { }
-        public override bool IsPublished => true;
-    }
+    public bool CanPublish => _canPublish;
+    public bool IsPublished => _isPublished;
+    public bool IsArchived => _isArchived;
 
-    public sealed record Archived : CourseStatus
-    {
-        public Archived() : base(3, "Archived") { }
-        public override bool IsArchived => true;
-    }
+    public static readonly CourseStatus Draft =
+        new(1, "Draft", canPublish: true, isPublished: false, isArchived: false);
+
+    public static readonly CourseStatus Published =
+        new(2, "Published", canPublish: false, isPublished: true, isArchived: false);
+
+    public static readonly CourseStatus Archived =
+        new(3, "Archived", canPublish: false, isPublished: false, isArchived: true);
 }

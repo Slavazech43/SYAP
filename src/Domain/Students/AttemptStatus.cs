@@ -2,21 +2,21 @@ using Domain.Common;
 
 namespace Domain.Students;
 
-public abstract record AttemptStatus : Enumeration<AttemptStatus>
+public sealed record AttemptStatus : Enumeration<AttemptStatus>
 {
-    protected AttemptStatus(int key, string name) : base(key, name) { }
+    private readonly bool _isFinal;
 
-    public abstract bool IsFinal { get; }
-
-    public sealed record Started : AttemptStatus
+    private AttemptStatus(int key, string name, bool isFinal)
+        : base(key, name)
     {
-        public Started() : base(1, "Started") { }
-        public override bool IsFinal => false;
+        _isFinal = isFinal;
     }
 
-    public sealed record Finished : AttemptStatus
-    {
-        public Finished() : base(2, "Finished") { }
-        public override bool IsFinal => true;
-    }
+    public bool IsFinal => _isFinal;
+
+    public static readonly AttemptStatus Started =
+        new(1, "Started", isFinal: false);
+
+    public static readonly AttemptStatus Finished =
+        new(2, "Finished", isFinal: true);
 }

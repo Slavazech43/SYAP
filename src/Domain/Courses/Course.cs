@@ -24,7 +24,9 @@ public sealed class Course
         Title = title;
         Description = description;
         Price = price;
-        Status = new CourseStatus.Draft();
+
+        // было: new CourseStatus.Draft()
+        Status = CourseStatus.Draft;
     }
 
     public static Course Create(
@@ -74,20 +76,20 @@ public sealed class Course
         if (_modules.Count == 0)
             throw new InvalidOperationException("Нельзя опубликовать курс без модулей.");
 
-        Status = new CourseStatus.Published();
+        Status = CourseStatus.Published;
     }
 
     public void Archive()
     {
-        if (Status is CourseStatus.Archived)
+        if (Status == CourseStatus.Archived)
             throw new InvalidOperationException("Курс уже архивирован.");
 
-        Status = new CourseStatus.Archived();
+        Status = CourseStatus.Archived;
     }
 
     private void EnsureNotArchived()
     {
-        if (Status is CourseStatus.Archived)
+        if (Status == CourseStatus.Archived)
             throw new InvalidOperationException("Архивированный курс нельзя изменять.");
     }
 }
